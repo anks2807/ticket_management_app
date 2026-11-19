@@ -1,7 +1,8 @@
 <!--
 Sync Impact Report (temporary; remove before committing)
-- Version change: 1.0.0 -> 2.0.0 (MAJOR: Principle IV redefined; mandated stack changed
-  H2 -> PostgreSQL and Redis -> PGVector, per Governance versioning policy)
+- Version change: 2.0.0 -> 3.0.0 (MAJOR: Principle V redefined. Retry, failure surfacing,
+  reindex, and their tests moved from ticket features to the assistant feature (002). Earlier
+  amendment: Principle IV redefined, stack changed H2 -> PostgreSQL and Redis -> PGVector)
 - Modified principles:
   - II. Validation at the Boundary: invalid transitions distinguishable from malformed
     input by status code and error code
@@ -9,7 +10,8 @@ Sync Impact Report (temporary; remove before committing)
   - IV. Grounded AI Only: "MUST NOT use general model knowledge" replaced by claim
     traceability, cited IDs subset of retrieved IDs verified in code, no-LLM short circuit
   - V. Knowledge Freshness: expanded triggers; atomic refresh intent in the ticket
-    transaction; embedding generation outside it; retries; full reindex capability
+    transaction; embedding generation outside it; retry, failure surfacing, and reindex
+    moved to the consuming feature (002)
 - Added sections: none
 - Modified sections: Technology Constraints (PostgreSQL, PGVector, versioned migrations,
   pinned versions); Development Workflow & Quality Gates (lint/type checks removed;
@@ -93,11 +95,12 @@ stale knowledge base is a defect.
 - The intent to refresh MUST be recorded atomically with the ticket change, in the same
   database transaction.
 - Embedding generation MUST NOT run inside that transaction.
-- Failed refreshes MUST be retried, and failures MUST be surfaced (logged and observable),
-  never silently swallowed.
-- A full reindex capability MUST exist to rebuild all embeddings from ticket data.
-- Tests MUST verify that each trigger records a refresh intent, that rolled-back ticket
-  changes record none, and that failed refreshes are retried.
+- Tests MUST verify that each trigger records a refresh intent and that rolled-back ticket
+  changes record none.
+- Consumption of refresh intents belongs to the assistant feature (002). That feature MUST
+  retry failed refreshes, MUST surface failures (logged and observable, never silently
+  swallowed), and MUST provide a full reindex capability that rebuilds all embeddings from
+  ticket data. Each of these MUST have tests in that feature.
 
 Rationale: grounded answers are only as good as the freshness of what they are grounded in,
 and recording intent transactionally ensures no ticket change is ever lost, while keeping
@@ -171,8 +174,9 @@ plan and MUST NOT drift; changing a pinned version requires an explicit plan upd
   Constitution Check.
 - A feature is done only when: validation and error-format behavior is covered by tests,
   every affected state transition has a passing integration test (Principle III), refresh
-  intent recording and retry behavior is tested where tickets change (Principle V), and
-  grounded-answer behavior is tested where the assistant changes (Principle IV).
+  intent recording is tested where tickets change (Principle V), retry and reindex behavior
+  is tested in the feature that consumes refresh intents (Principle V), and grounded-answer
+  behavior is tested where the assistant changes (Principle IV).
 - Code review MUST verify no secrets, no hardcoded AI parameters, and no unjustified
   abstractions.
 - The project MUST compile successfully and the full test suite MUST pass before merge.
@@ -187,4 +191,4 @@ guidance, PATCH for clarifications and wording fixes. All PRs and reviews MUST v
 compliance with this constitution; violations of NON-NEGOTIABLE principles (I, IV) block
 merge, and any other complexity or deviation MUST be justified in writing in the PR or plan.
 
-**Version**: 2.0.0 | **Ratified**: 2026-11-19 | **Last Amended**: 2026-11-19
+**Version**: 3.0.0 | **Ratified**: 2026-11-19 | **Last Amended**: 2026-11-19

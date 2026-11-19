@@ -63,14 +63,14 @@ Not added: Spring AI, Lombok, MapStruct, H2, any search engine, `spring-boot-sta
 | II | Validation at the Boundary | PASS | PASS | Bean Validation at the controller; one problem-detail format for every error including framework errors; 400 vs 409 use different status *and* `errorCode`. No stack traces in responses (catch-all returns generic 500). |
 | III | Test-First for Deterministic Logic | PASS | PASS | Transition matrix (25 pairs) as integration tests on real PostgreSQL, written first against stubs and observed failing. |
 | IV | Grounded AI Only | N/A | N/A | No AI in this feature. |
-| V | Knowledge Freshness | **PARTIAL** | **PARTIAL** | This feature delivers the atomic, durable intent (creation, field update, comment, every status move incl. cancellation) and tests commit/rollback behavior. Retry, failure visibility, and full reindex are deferred to feature 002 **by spec decision** (clarification 2026-11-19). Justified in Complexity Tracking. |
+| V | Knowledge Freshness | PASS | PASS | Constitution v3.0.0 assigns retry, failure surfacing, and full reindex to the feature that consumes refresh intents (002). This feature delivers the atomic, durable intent (creation, field update, comment, every status move incl. cancellation) and tests commit/rollback behavior, which is its full scope. |
 | VI | Configuration over Hardcoding | PASS | PASS | No AI parameters here. DB URL/user/password and lock timeout come from configuration/environment. The page size of 20 is a spec-fixed constant, not a tunable. |
 | VII | Bounded AI Scope | N/A | N/A | No AI. |
 | VIII | Security | PASS | PASS | No secrets in the repo: compose reads the DB password from an untracked `.env`; `.env.example` has placeholders only; `application.yml` has no default password. Seed data is fictional. |
 | IX | Simplicity | PASS | PASS | No full-text engine, no MapStruct/Lombok, no generic repository layer, no event bus (explicit outbox call per use case). Two justified additions are listed in Complexity Tracking. |
 | X | AI Accountability | PASS | PASS | All plan content is AI-drafted and needs human review. Any AI mistake found during implementation goes into `docs/ai-mistakes.md`. |
 
-**Gate result**: no unjustified violations. Principle V is PARTIAL by documented spec decision, so **this feature alone does not satisfy the constitution's "done" definition** (retry behavior untested). See Complexity Tracking.
+**Gate result**: no violations and no deviations. Principle V (constitution v3.0.0) places retry and reindex testing in feature 002, so this feature's "done" definition is met.
 
 ## Decisions (confirmed)
 
@@ -187,7 +187,6 @@ Red-first procedure: the first task commits compiling stubs (domain methods thro
 
 | Violation / addition | Why Needed | Simpler Alternative Rejected Because |
 |----------------------|------------|--------------------------------------|
-| **Principle V is only partly met** (intent recorded and tested; retry, failure visibility, and reindex absent) and the Quality Gate "retry behavior is tested where tickets change" cannot pass in this feature | Spec clarification 2026-11-19 moved retry, failure visibility, and rebuild to feature 002 because nothing consumes intents until the assistant exists. Tracked in `docs/carry-over-002-ticket-assistant.md`. | Building a consumer here would add an embedding model, a worker, and failure handling with no feature to use them (violates IX and the spec's scope). **Mitigation**: do not release 001 to users until 002 lands, or record explicit reviewer approval of this deviation in the PR. |
 | Custom `@AllowedValues` constraint (priority, category, status as strings) | FR-005/SC-003 require naming *every* invalid field in one response. Binding straight to enums makes Jackson fail on the first bad value and hide the rest. | Jackson enum binding reports only one field per request. A handler that parses Jackson's exception reports one error and breaks SC-003 for multi-field mistakes. |
 | `maven-enforcer-plugin` | Constitution requires the pinned Java/Maven versions to "NOT drift"; the enforcer makes drift a build failure. | Documentation alone does not stop drift. |
 

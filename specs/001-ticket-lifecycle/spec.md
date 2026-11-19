@@ -13,7 +13,7 @@
 ### Session 2026-11-19
 
 - Q: Should this feature's acceptance stop once a refresh intent is recorded with the ticket change, kept after a restart, and omitted when that change is rolled back, leaving retry, failure visibility, rebuild, and "knowledge matches" to the assistant feature? → A: Yes. This feature stops at atomic, durable intent. Retry, failure visibility, rebuild, and knowledge-matches move to the assistant feature.
-- Q: Should a ticket's category be chosen from a fixed list of values, or typed as free text? → A: Fixed list of five values: Billing, Technical, Account, Shipping, Other. An agent must choose one; any other value is refused as invalid input. The list changes only by amending this spec.
+- Q: Should a ticket's category be chosen from a fixed list of values, or typed as free text? → A: Fixed list of five values, stored and sent as the enum names: BILLING, TECHNICAL, ACCOUNT, SHIPPING, OTHER. An agent must choose one; any other value is refused as invalid input. The list changes only by amending this spec.
 - Q: Once a ticket is CLOSED or CANCELLED, which of its details should agents still be able to change: nothing, only comments, or everything including fields? → A: Only comments. Title, description, priority, assignee, category, and resolution notes are frozen once a ticket is CLOSED or CANCELLED. Comments can still be added in any status.
 - Q: Should moving a ticket to CANCELLED require a written reason, the same way moving to RESOLVED requires resolution notes? → A: Yes. A non-empty cancellation reason is required for the move to CANCELLED and is saved on the ticket as part of that move. It cannot be changed or removed afterwards.
 - Q: Should keyword search also match a ticket's identifier, so that typing TKT-1001 returns that ticket? → A: Yes, for an exact identifier match only. Typing TKT-1001 returns that ticket. A partial identifier such as 1001 does not match by identifier.
@@ -121,7 +121,7 @@ An agent looks through the team's tickets, searches by a word or phrase, and nar
 
 - A required field is missing, blank, or only spaces. The ticket is unchanged, and the response names that field.
 - A value exceeds the allowed length, or priority is not one of the allowed priorities. The ticket is unchanged, and the response names the field and the reason.
-- A category is not one of Billing, Technical, Account, Shipping, or Other. The ticket is unchanged, and the response names the category field and lists the allowed values.
+- A category is not one of BILLING, TECHNICAL, ACCOUNT, SHIPPING, or OTHER. The ticket is unchanged, and the response names the category field and lists the allowed values.
 - A lifecycle move names a status that is not one of OPEN, IN_PROGRESS, RESOLVED, CLOSED, or CANCELLED. This is reported as badly formed input, not as a disallowed move.
 - A lifecycle move names a real status the ticket cannot move to, including its current status. The ticket is unchanged. The response states the current status and the allowed moves, and is a different kind of error from badly formed input.
 - A ticket is CLOSED or CANCELLED. Every further move is refused, and the response states that no moves are allowed. Field edits are refused as well; comments are still accepted.
@@ -139,7 +139,7 @@ An agent looks through the team's tickets, searches by a word or phrase, and nar
 
 ### Functional Requirements
 
-- **FR-001**: The system MUST let an agent create a ticket by supplying a title, description, priority, and category. Assignee is optional. Category MUST be one of Billing, Technical, Account, Shipping, or Other.
+- **FR-001**: The system MUST let an agent create a ticket by supplying a title, description, priority, and category. Assignee is optional. Category MUST be one of BILLING, TECHNICAL, ACCOUNT, SHIPPING, or OTHER.
 - **FR-002**: The system MUST assign each new ticket a unique, immutable identifier of the form `TKT-` followed by a number (for example TKT-1001), set its status to OPEN, and record the creation time and last-updated time. Agents MUST NOT choose the identifier, the initial status, or these times.
 - **FR-003**: The system MUST let an agent view one ticket with its identifier, title, description, priority, assignee, category, status, resolution notes, cancellation reason (once cancelled), creation time, last-updated time, and all comments.
 - **FR-004**: The system MUST keep tickets, comments, and recorded refresh intents after a restart.
@@ -149,7 +149,7 @@ An agent looks through the team's tickets, searches by a word or phrase, and nar
 - **FR-008**: Changing status MUST be a separate action from editing ticket fields. The edit action MUST NOT change status, identifier, creation time, or comments. The status action MUST NOT change title, description, priority, assignee, or category.
 - **FR-009**: The only allowed status moves are OPEN→IN_PROGRESS, IN_PROGRESS→RESOLVED, RESOLVED→CLOSED, OPEN→CANCELLED, and IN_PROGRESS→CANCELLED. Any other move MUST be refused, MUST leave the ticket unchanged, and MUST tell the agent the current status and the moves allowed from it. A ticket that is CLOSED or CANCELLED has no allowed moves.
 - **FR-010**: Moving a ticket to RESOLVED MUST require non-empty resolution notes. Those notes are saved as part of that move. Notes that have been saved MUST NOT be cleared. Moving a ticket to CANCELLED MUST require a non-empty cancellation reason, saved as part of that move. The cancellation reason MUST NOT be changed or removed afterwards.
-- **FR-011**: An agent MUST be able to change a ticket's title, description, priority, assignee, and category. A new category MUST be one of Billing, Technical, Account, Shipping, or Other. An agent MUST be able to correct resolution notes after they have been saved. Resolution notes MUST NOT be set by an edit while the ticket has none; they are only introduced by the move to RESOLVED. Each accepted edit MUST update the last-updated time. While a ticket is CLOSED or CANCELLED, no field MAY be changed, including resolution notes; such an edit MUST be refused and the ticket left unchanged.
+- **FR-011**: An agent MUST be able to change a ticket's title, description, priority, assignee, and category. A new category MUST be one of BILLING, TECHNICAL, ACCOUNT, SHIPPING, or OTHER. An agent MUST be able to correct resolution notes after they have been saved. Resolution notes MUST NOT be set by an edit while the ticket has none; they are only introduced by the move to RESOLVED. Each accepted edit MUST update the last-updated time. While a ticket is CLOSED or CANCELLED, no field MAY be changed, including resolution notes; such an edit MUST be refused and the ticket left unchanged.
 - **FR-012**: An agent MUST be able to add a comment made of an author and text, in any ticket status including CLOSED and CANCELLED. The system MUST record the time of the comment and MUST update the ticket's last-updated time. Comments MUST NOT be edited or deleted.
 - **FR-013**: An agent MUST be able to list tickets, most recently updated first, and MUST be able to request the list in successive portions.
 - **FR-014**: An agent MUST be able to search tickets by a keyword. A match is a case-insensitive occurrence in the title, description, category, resolution notes, assignee, or any comment text, or an exact match to the ticket identifier (for example, TKT-1001). The exact identifier match is case-insensitive and ignores surrounding whitespace. A partial identifier match does not count. A keyword and a status filter MUST be usable together, and both then apply. No matches MUST return an empty list.
@@ -181,8 +181,8 @@ An agent looks through the team's tickets, searches by a word or phrase, and nar
 
 - Agents are the only people using this feature. Distinguishing customers, leads, or administrators is out of scope, so the assignee and the comment author are names the agent types, not accounts.
 - A new ticket always starts as OPEN. The agent does not set a status at creation.
-- Priority is one of: Low, Medium, High, Urgent.
-- Category is one of five fixed values: Billing, Technical, Account, Shipping, Other. The list is defined in this spec and changes only by amending it; this version has no way to add categories at runtime.
+- Priority is one of LOW, MEDIUM, HIGH, or URGENT. These names are the stored and wire values.
+- Category is one of five fixed values: BILLING, TECHNICAL, ACCOUNT, SHIPPING, OTHER. These names are the stored and wire values. The list is defined in this spec and changes only by amending it; this version has no way to add categories at runtime.
 - Length limits: title up to 200 characters; description, resolution notes, and cancellation reason up to 5,000 characters each; assignee and comment author up to 100 characters each; comment text up to 5,000 characters. Shorter values are accepted. Empty and whitespace-only values are rejected wherever the field is required.
 - Identifiers start at TKT-1001 and increase by one for each new ticket. A number is never reused. A gap in the numbers is acceptable.
 - Times are recorded by the system when the change is saved, and are shown as that same moment wherever the ticket is read.
