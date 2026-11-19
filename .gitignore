@@ -1,2 +1,8 @@
 .vscode/**
 .cursorindexingignore
+.env
+target/
+*.class
+.gradle/
+build/
+.env**

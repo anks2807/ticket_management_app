@@ -1,0 +1,21 @@
+# lock_timeout for PostgreSQL (research R-04, D11): applied per connection via Hikari; override ticket.lock-wait.
+ticket:
+  lock-wait: 5s
+  lock-wait-retry-after-seconds: 5
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    hikari:
+      connection-init-sql: SET lock_timeout = '${ticket.lock-wait:5s}'
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    locations: classpath:db/migration
