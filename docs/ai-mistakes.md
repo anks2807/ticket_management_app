@@ -47,3 +47,58 @@ Categories: WRONG-CODE · UNGROUNDED-ANSWER · OMISSION · INVENTED-REQUIREMENT 
 - **Impact:** Would have made ticket CRUD fail whenever the embedding provider was down.
 - **Fix:** Principle V now requires atomic intent recording and forbids embedding inside the transaction.
 - **Prevention:** For any "just put it in one transaction" suggestion, ask what external calls happen inside it.
+
+## M-007 · Instructor predicted the wrong constitution version bump
+- **Date / Phase:** 2026-11-19 · Constitution amendment
+- **Tool:** Claude (chat instructor)
+- **Category:** UNGROUNDED-ANSWER
+- **AI said:** The amendment should produce v1.1.0 (MINOR).
+- **Actually true:** The amendment redefined Principle IV and swapped the mandated stack; under the constitution's own Governance rules that is MAJOR → v2.0.0. The spec-kit command applied the rules correctly and explained why.
+- **How caught:** Compared the generated Sync Impact Report against the Governance versioning rules.
+- **Impact:** Recording MINOR would have labeled a breaking governance change (redefined principle and a new mandated stack) as backward-compatible.
+- **Fix:** Accepted 2.0.0.
+- **Prevention:** Re-apply the rules after the scope of a change changes; don't reuse an earlier prediction.
+
+## M-008 · Category list did not cover the requirements' own examples
+- **Date / Phase:** 2026-11-19 · /speckit-specify, /speckit-clarify (001)
+- **Tool:** Cursor (spec-kit)
+- **Category:** INVENTED-REQUIREMENT
+- **AI said:** First, category as free text ("words the assistant can use"); then, in clarify, a fixed list of Billing, Technical, Account, Other.
+- **Actually true:** Category is a RAG metadata filter, so free text fragments it ("Payment" vs "payments"); and the requirements example "common causes of shipment tracking issues" has no matching category, so it would fall into Other.
+- **How caught:** Checked the category values against the requirements document's example questions.
+- **Impact:** Shipment-tracking tickets would be stored as Other, so a category filter could not retrieve them; free-text values would also split equivalent categories.
+- **Fix:** Fixed list Billing, Technical, Account, Shipping, Other (post-clarify amendment).
+- **Prevention:** Check every enumerated value against the source requirements and example queries.
+
+## M-009 · Untestable success criterion for a backend-only feature
+- **Date / Phase:** 2026-11-19 · /speckit-specify (001)
+- **Tool:** Cursor (spec-kit)
+- **Category:** INVENTED-REQUIREMENT
+- **AI said:** SC-001 "An agent can create a ticket and open its full details in under one minute."
+- **Actually true:** The feature has no UI; a human timing target is not measurable by an automated test and measures nothing about the system.
+- **How caught:** Manual spec review against the "every criterion must be testable" rule.
+- **Impact:** A success criterion that no automated test can check, and that says nothing about the backend feature.
+- **Fix:** SC-001 deleted.
+- **Prevention:** Success criteria must be checkable for the feature's actual scope.
+
+## M-010 · Last-write-wins would break the non-negotiable state machine
+- **Date / Phase:** 2026-11-19 · /speckit-specify, /speckit-clarify (001)
+- **Tool:** Cursor (spec-kit)
+- **Category:** WRONG-CODE (design defect)
+- **AI said:** "Two agents change the same ticket … the last accepted change is stored; no conflict detection."
+- **Actually true:** Two concurrent moves from OPEN (→IN_PROGRESS and →CANCELLED) would both validate against OPEN; the later write could turn a CANCELLED ticket into IN_PROGRESS, a forbidden transition (Constitution I, NON-NEGOTIABLE). The same race allows edits on frozen tickets.
+- **How caught:** Manual review combining the concurrency assumption with the state machine; neither specify nor clarify flagged it.
+- **Impact:** A later write could store a forbidden transition or an edit on a frozen ticket.
+- **Fix:** Spec requires every move/edit to be evaluated against the state at save time; plan uses a pessimistic row lock; concurrency tests for both races.
+- **Prevention:** For any concurrency rule, check it against every invariant in the constitution.
+
+## M-011 · Plan claimed create takes a row lock
+- **Date / Phase:** 2026-11-19 · /speckit-plan (001)
+- **Tool:** Cursor (spec-kit)
+- **Category:** WRONG-CODE
+- **AI said:** "Every create, edit, comment, and status move … first takes a pessimistic row lock on the ticket."
+- **Actually true:** A create has no existing row to lock; only edit, transition, and comment lock.
+- **How caught:** Manual plan review.
+- **Impact:** Implementers would try to lock a row that does not exist yet on create.
+- **Fix:** Plan corrected (D-decision prompt).
+- **Prevention:** Read summary statements literally; check them against what each operation can actually do.

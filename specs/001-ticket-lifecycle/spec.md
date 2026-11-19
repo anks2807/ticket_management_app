@@ -132,6 +132,7 @@ An agent looks through the team's tickets, searches by a word or phrase, and nar
 - Recording the refresh intent fails. The ticket change is not saved either, because both are written in the same save.
 - The system restarts after a change is saved. The change and its refresh intent are both still present.
 - Every lifecycle move and every field edit is evaluated against the ticket's state at the moment it is saved. Concurrent requests can never together produce a disallowed move or an edit to a frozen ticket. A request that loses such a race is evaluated against the new state (for example, it becomes a disallowed move). Last-write-wins applies only between concurrent edits of an editable ticket.
+- If a ticket is held by another in-progress change for longer than a configured wait, the request is refused as temporarily unavailable with guidance to retry later; the ticket is unchanged and no refresh intent is recorded. This is a fourth kind of outcome, distinct from badly formed input, a disallowed move, and a missing ticket.
 - A search keyword matches nothing, or a status filter matches no tickets. The agent gets an empty list.
 
 ## Requirements *(mandatory)*
