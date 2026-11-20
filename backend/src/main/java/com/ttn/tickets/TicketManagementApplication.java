@@ -5,8 +5,12 @@ import java.time.Clock;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+
+import com.ttn.tickets.assistant.config.AssistantConfiguration;
 
 @SpringBootApplication
+@Import(AssistantConfiguration.class)
 public class TicketManagementApplication {
 
     public static void main(String[] args) {

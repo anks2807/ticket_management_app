@@ -10,10 +10,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest
+@ActiveProfiles("integration-test")
 public abstract class PostgresIntegrationTest {
 
     private static final DockerImageName POSTGRES_IMAGE = DockerImageName.parse("pgvector/pgvector:0.8.7-pg17")
@@ -37,7 +39,7 @@ public abstract class PostgresIntegrationTest {
     void truncateTables() throws SQLException {
         try (Connection connection = dataSource.getConnection();
                 Statement statement = connection.createStatement()) {
-            statement.execute("TRUNCATE TABLE ticket_refresh_intent, comment, ticket");
+            statement.execute("TRUNCATE TABLE assistant_ticket_chunk, ticket_refresh_intent, comment, ticket");
         }
     }
 }

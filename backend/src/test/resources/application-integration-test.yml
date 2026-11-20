@@ -1,0 +1,11 @@
+spring:
+  ai:
+    model:
+      chat: none
+      embedding: none
+
+assistant:
+  refresh:
+    poll-interval: 1h
+  retrieval:
+    similarity-threshold: 0.35

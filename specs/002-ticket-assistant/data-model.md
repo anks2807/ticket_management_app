@@ -33,6 +33,7 @@ Required extensions (migration): `vector`, `uuid-ossp` (per `PgVectorStore` sche
 
 | Property | Default |
 |----------|---------|
+| `assistant.ask.max-question-length` | 1000 |
 | `assistant.retrieval.top-k` | 5 |
 | `assistant.retrieval.similarity-threshold` | 0.70 |
 | `assistant.chunking.max-tokens` | 800 |

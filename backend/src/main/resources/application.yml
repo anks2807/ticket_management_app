@@ -19,3 +19,44 @@ spring:
       ddl-auto: validate
   flyway:
     locations: classpath:db/migration
+
+  ai:
+    vectorstore:
+      pgvector:
+        table-name: assistant_ticket_chunk
+        initialize-schema: false
+        dimensions: 1024
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+    bedrock:
+      aws:
+        region: ${AWS_REGION:us-east-1}
+      converse:
+        chat:
+          options:
+            model: ${assistant.bedrock.chat-model-id:}
+      titan:
+        embedding:
+          options:
+            input-type: search_document
+            model: ${assistant.bedrock.embedding-model-id:amazon.titan-embed-text-v2:0}
+
+assistant:
+  ask:
+    max-question-length: 1000
+  retrieval:
+    top-k: 5
+    similarity-threshold: 0.70
+  chunking:
+    max-tokens: 800
+  refresh:
+    poll-interval: 5s
+    batch-size: 20
+    max-attempts: 5
+    backoff-base: 30s
+  bedrock:
+    chat-model-id: ${ASSISTANT_BEDROCK_CHAT_MODEL_ID:}
+    embedding-model-id: ${ASSISTANT_BEDROCK_EMBEDDING_MODEL_ID:amazon.titan-embed-text-v2:0}
+    embedding-dimensions: 1024
+    prompt-caching:
+      enabled: true

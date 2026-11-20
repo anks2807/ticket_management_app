@@ -38,6 +38,7 @@ import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.dao.PessimisticLockingFailureException;
 
 import com.ttn.tickets.application.TicketNotFoundException;
+import com.ttn.tickets.assistant.retrieval.InvalidQuestionException;
 import com.ttn.tickets.domain.InvalidTransitionException;
 import com.ttn.tickets.domain.ResolutionNotesNotEditableException;
 import com.ttn.tickets.domain.TicketFrozenException;
@@ -109,6 +110,12 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     ResponseEntity<Object> validationFailed(ValidationFailedException exception) {
         return body(ErrorCode.VALIDATION_FAILED, HttpStatus.BAD_REQUEST, "Validation failed",
                 "One or more fields are invalid", exception.errors());
+    }
+
+    @ExceptionHandler(InvalidQuestionException.class)
+    ResponseEntity<Object> invalidQuestion(InvalidQuestionException exception) {
+        return body(ErrorCode.INVALID_QUESTION, HttpStatus.BAD_REQUEST, "Invalid question",
+                exception.getMessage(), null);
     }
 
     @ExceptionHandler(Exception.class)

@@ -85,7 +85,8 @@ class MigrationAndSeedIT extends PostgresIntegrationTest {
                         "SPRING_DATASOURCE_USERNAME=" + POSTGRES.getUsername(),
                         "SPRING_DATASOURCE_PASSWORD=" + POSTGRES.getPassword(),
                         "spring.flyway.enabled=false",
-                        "spring.jpa.hibernate.ddl-auto=validate")
+                        "spring.jpa.hibernate.ddl-auto=validate",
+                        "spring.profiles.active=integration-test")
                 .run();
         try {
             try (var connection = context.getBean(DataSource.class).getConnection()) {

@@ -1,0 +1,10 @@
+[
+  {
+    "question": "Which high-priority tickets are related to payment?",
+    "expectedSeedKey": "payment-high"
+  },
+  {
+    "question": "Show me similar resolved tickets",
+    "expectedSeedKey": "resolved-shipping"
+  }
+]

@@ -1,5 +1,6 @@
 package com.ttn.tickets.domain;
 
+import java.time.Duration;
 import java.time.Instant;
 
 import jakarta.persistence.Column;
@@ -29,6 +30,22 @@ public class RefreshIntent {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "processing_status", nullable = false, length = 20)
+    private ProcessingStatus processingStatus = ProcessingStatus.PENDING;
+
+    @Column(name = "attempt_count", nullable = false)
+    private int attemptCount;
+
+    @Column(name = "next_attempt_at")
+    private Instant nextAttemptAt;
+
+    @Column(name = "processed_at")
+    private Instant processedAt;
+
+    @Column(name = "last_error")
+    private String lastError;
+
     protected RefreshIntent() {
     }
 
@@ -36,6 +53,27 @@ public class RefreshIntent {
         this.ticketId = ticketId;
         this.changeType = changeType;
         this.createdAt = createdAt;
+        this.processingStatus = ProcessingStatus.PENDING;
+        this.attemptCount = 0;
+    }
+
+    public void markDone(Instant now) {
+        processingStatus = ProcessingStatus.DONE;
+        processedAt = now;
+        nextAttemptAt = null;
+        lastError = null;
+    }
+
+    public void recordFailure(String error, Instant now, int maxAttempts, Duration backoffBase) {
+        attemptCount++;
+        lastError = error;
+        if (attemptCount >= maxAttempts) {
+            processingStatus = ProcessingStatus.FAILED;
+            nextAttemptAt = null;
+        } else {
+            processingStatus = ProcessingStatus.PENDING;
+            nextAttemptAt = now.plus(backoffBase.multipliedBy(attemptCount));
+        }
     }
 
     public Long getId() {
@@ -52,5 +90,25 @@ public class RefreshIntent {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public ProcessingStatus getProcessingStatus() {
+        return processingStatus;
+    }
+
+    public int getAttemptCount() {
+        return attemptCount;
+    }
+
+    public Instant getNextAttemptAt() {
+        return nextAttemptAt;
+    }
+
+    public Instant getProcessedAt() {
+        return processedAt;
+    }
+
+    public String getLastError() {
+        return lastError;
     }
 }

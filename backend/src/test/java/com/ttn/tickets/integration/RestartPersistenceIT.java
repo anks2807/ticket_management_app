@@ -65,7 +65,8 @@ class RestartPersistenceIT extends PostgresIntegrationTest {
                 .properties(
                         "SPRING_DATASOURCE_URL=" + jdbcUrl,
                         "SPRING_DATASOURCE_USERNAME=" + username,
-                        "SPRING_DATASOURCE_PASSWORD=" + password)
+                        "SPRING_DATASOURCE_PASSWORD=" + password,
+                        "spring.profiles.active=integration-test")
                 .run();
 
         try {
