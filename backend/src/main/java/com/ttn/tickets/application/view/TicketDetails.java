@@ -1,6 +1,7 @@
 package com.ttn.tickets.application.view;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.ttn.tickets.domain.Category;
@@ -16,6 +17,7 @@ public record TicketDetails(
         Category category,
         String assignee,
         TicketStatus status,
+        List<TicketStatus> allowedTransitions,
         String resolutionNotes,
         String cancellationReason,
         Instant createdAt,
@@ -26,6 +28,7 @@ public record TicketDetails(
         List<CommentView> comments = ticket.getComments().stream()
                 .map(comment -> new CommentView(comment.getAuthor(), comment.getText(), comment.getCreatedAt()))
                 .toList();
+        List<TicketStatus> allowed = new ArrayList<>(ticket.getStatus().allowedTransitions());
         return new TicketDetails(
                 Ticket.formatId(ticket.getId()),
                 ticket.getTitle(),
@@ -34,6 +37,7 @@ public record TicketDetails(
                 ticket.getCategory(),
                 ticket.getAssignee(),
                 ticket.getStatus(),
+                List.copyOf(allowed),
                 ticket.getResolutionNotes(),
                 ticket.getCancellationReason(),
                 ticket.getCreatedAt(),

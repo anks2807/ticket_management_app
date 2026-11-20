@@ -18,6 +18,10 @@
 - Q: Should moving a ticket to CANCELLED require a written reason, the same way moving to RESOLVED requires resolution notes? → A: Yes. A non-empty cancellation reason is required for the move to CANCELLED and is saved on the ticket as part of that move. It cannot be changed or removed afterwards.
 - Q: Should keyword search also match a ticket's identifier, so that typing TKT-1001 returns that ticket? → A: Yes, for an exact identifier match only. Typing TKT-1001 returns that ticket. A partial identifier such as 1001 does not match by identifier.
 
+### Post-session 2026-11-20
+
+- **Amendment (003-support-agent-ui)**: Ticket view responses MUST include `allowedTransitions` from the domain state machine so clients (feature 003) never duplicate lifecycle rules—required by constitution Principle I.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Create and view a ticket (Priority: P1)
@@ -141,7 +145,7 @@ An agent looks through the team's tickets, searches by a word or phrase, and nar
 
 - **FR-001**: The system MUST let an agent create a ticket by supplying a title, description, priority, and category. Assignee is optional. Category MUST be one of BILLING, TECHNICAL, ACCOUNT, SHIPPING, or OTHER.
 - **FR-002**: The system MUST assign each new ticket a unique, immutable identifier of the form `TKT-` followed by a number (for example TKT-1001), set its status to OPEN, and record the creation time and last-updated time. Agents MUST NOT choose the identifier, the initial status, or these times.
-- **FR-003**: The system MUST let an agent view one ticket with its identifier, title, description, priority, assignee, category, status, resolution notes, cancellation reason (once cancelled), creation time, last-updated time, and all comments.
+- **FR-003**: The system MUST let an agent view one ticket with its identifier, title, description, priority, assignee, category, status, the list of status moves currently allowed from its status (empty for CLOSED and CANCELLED), resolution notes, cancellation reason (once cancelled), creation time, last-updated time, and all comments.
 - **FR-004**: The system MUST keep tickets, comments, and recorded refresh intents after a restart.
 - **FR-005**: The system MUST check every submitted value and, when input is invalid, MUST identify each invalid field and why it is invalid. Invalid input MUST NOT change stored data.
 - **FR-006**: The system MUST report a badly formed request and a disallowed lifecycle move as two different kinds of errors, so they can be told apart without relying on message wording alone.

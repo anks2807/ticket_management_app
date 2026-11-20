@@ -1,0 +1,87 @@
+{
+  "validationFailed": {
+    "type": "about:blank",
+    "title": "Validation failed",
+    "status": 400,
+    "errorCode": "VALIDATION_FAILED",
+    "detail": "One or more fields failed validation",
+    "errors": [
+      {
+        "field": "title",
+        "code": "BLANK",
+        "message": "Title must not be blank"
+      },
+      {
+        "field": "description",
+        "code": "BLANK",
+        "message": "Description must not be blank"
+      }
+    ]
+  },
+  "malformedRequestWithErrors": {
+    "type": "about:blank",
+    "title": "Malformed request",
+    "status": 400,
+    "errorCode": "MALFORMED_REQUEST",
+    "errors": [
+      {
+        "field": "page",
+        "code": "NOT_ALLOWED",
+        "message": "page must be a non-negative integer"
+      }
+    ]
+  },
+  "malformedRequestGeneric": {
+    "type": "about:blank",
+    "title": "Malformed request",
+    "status": 400,
+    "errorCode": "MALFORMED_REQUEST",
+    "detail": "Unknown field: status"
+  },
+  "invalidTransition": {
+    "type": "about:blank",
+    "title": "Invalid transition",
+    "status": 409,
+    "errorCode": "INVALID_TRANSITION",
+    "detail": "Cannot move to CLOSED from OPEN",
+    "currentStatus": "OPEN",
+    "allowedTransitions": ["IN_PROGRESS", "CANCELLED"]
+  },
+  "ticketFrozen": {
+    "type": "about:blank",
+    "title": "Ticket frozen",
+    "status": 409,
+    "errorCode": "TICKET_FROZEN",
+    "detail": "This ticket is closed or cancelled and cannot be edited",
+    "currentStatus": "CLOSED"
+  },
+  "resolutionNotesNotEditable": {
+    "type": "about:blank",
+    "title": "Resolution notes not editable",
+    "status": 409,
+    "errorCode": "RESOLUTION_NOTES_NOT_EDITABLE",
+    "detail": "Resolution notes cannot be set via edit",
+    "currentStatus": "OPEN"
+  },
+  "ticketNotFound": {
+    "type": "about:blank",
+    "title": "Ticket not found",
+    "status": 404,
+    "errorCode": "TICKET_NOT_FOUND",
+    "detail": "No ticket matches TKT-9999"
+  },
+  "ticketBusy": {
+    "type": "about:blank",
+    "title": "Ticket busy",
+    "status": 503,
+    "errorCode": "TICKET_BUSY",
+    "detail": "Another change is in progress; retry later"
+  },
+  "internalError": {
+    "type": "about:blank",
+    "title": "Internal error",
+    "status": 500,
+    "errorCode": "INTERNAL_ERROR",
+    "detail": "The request could not be completed"
+  }
+}

@@ -55,6 +55,7 @@ class CreateAndViewIT extends PostgresIntegrationTest {
                 .andExpect(jsonPath("$.category").value("TECHNICAL"))
                 .andExpect(jsonPath("$.assignee").value("agent@example.com"))
                 .andExpect(jsonPath("$.status").value("OPEN"))
+                .andExpect(jsonPath("$.allowedTransitions", containsInAnyOrder("IN_PROGRESS", "CANCELLED")))
                 .andExpect(jsonPath("$.resolutionNotes").value(nullValue()))
                 .andExpect(jsonPath("$.cancellationReason").value(nullValue()))
                 .andExpect(jsonPath("$.comments").isEmpty())
@@ -69,6 +70,7 @@ class CreateAndViewIT extends PostgresIntegrationTest {
                 .andExpect(jsonPath("$.id").value(id))
                 .andExpect(jsonPath("$.title").value("Printer jam"))
                 .andExpect(jsonPath("$.status").value("OPEN"))
+                .andExpect(jsonPath("$.allowedTransitions", containsInAnyOrder("IN_PROGRESS", "CANCELLED")))
                 .andExpect(jsonPath("$.comments").isEmpty())
                 .andExpect(jsonPath("$.resolutionNotes").value(nullValue()))
                 .andExpect(jsonPath("$.cancellationReason").value(nullValue()));

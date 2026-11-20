@@ -329,7 +329,7 @@ components:
           format: date-time
     Ticket:
       type: object
-      required: [id, title, description, priority, category, status, createdAt, updatedAt, comments]
+      required: [id, title, description, priority, category, status, allowedTransitions, createdAt, updatedAt, comments]
       properties:
         id:
           type: string
@@ -346,6 +346,15 @@ components:
           type: [string, 'null']
         status:
           $ref: '#/components/schemas/TicketStatus'
+        allowedTransitions:
+          type: array
+          description: |
+            Status values the ticket may move to from its current status. Empty when the ticket is CLOSED or CANCELLED.
+            Derived from the domain lifecycle rules (same set reported on 409 INVALID_TRANSITION).
+          items:
+            $ref: '#/components/schemas/TicketStatus'
+          examples:
+            - [IN_PROGRESS, CANCELLED]
         resolutionNotes:
           type: [string, 'null']
           description: Null until the ticket is resolved.
@@ -363,6 +372,20 @@ components:
           description: Oldest first.
           items:
             $ref: '#/components/schemas/Comment'
+      examples:
+        - id: TKT-1001
+          title: Printer jam
+          description: The third-floor printer is jammed
+          priority: HIGH
+          category: TECHNICAL
+          assignee: agent@example.com
+          status: OPEN
+          allowedTransitions: [IN_PROGRESS, CANCELLED]
+          resolutionNotes: null
+          cancellationReason: null
+          createdAt: '2026-11-20T10:00:00Z'
+          updatedAt: '2026-11-20T10:00:00Z'
+          comments: []
     TicketSummary:
       type: object
       required: [id, title, priority, category, status, createdAt, updatedAt]

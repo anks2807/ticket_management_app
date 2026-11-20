@@ -16,6 +16,7 @@ public record TicketResponse(
         String category,
         String assignee,
         String status,
+        List<String> allowedTransitions,
         String resolutionNotes,
         String cancellationReason,
         Instant createdAt,
@@ -26,6 +27,9 @@ public record TicketResponse(
         List<CommentResponse> comments = details.comments().stream()
                 .map(CommentResponse::from)
                 .toList();
+        List<String> allowed = details.allowedTransitions().stream()
+                .map(Enum::name)
+                .toList();
         return new TicketResponse(
                 details.id(),
                 details.title(),
@@ -34,6 +38,7 @@ public record TicketResponse(
                 details.category().name(),
                 details.assignee(),
                 details.status().name(),
+                allowed,
                 details.resolutionNotes(),
                 details.cancellationReason(),
                 details.createdAt(),

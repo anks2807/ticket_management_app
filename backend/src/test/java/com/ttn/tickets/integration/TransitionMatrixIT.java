@@ -2,20 +2,20 @@ package com.ttn.tickets.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.EnumSet;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -39,6 +39,20 @@ class TransitionMatrixIT extends PostgresIntegrationTest {
     }
 
     @ParameterizedTest
+    @EnumSource(TicketStatus.class)
+    void ticketViewListsAllowedTransitionsForEveryStatus(TicketStatus status) throws Exception {
+        long ticketId = insert(status);
+        String[] allowed = status.allowedTransitions().stream().map(TicketStatus::name).toArray(String[]::new);
+        var result = mockMvc.perform(get("/api/tickets/TKT-" + ticketId));
+        result.andExpect(status().isOk()).andExpect(jsonPath("$.status").value(status.name()));
+        if (allowed.length == 0) {
+            result.andExpect(jsonPath("$.allowedTransitions").isEmpty());
+        } else {
+            result.andExpect(jsonPath("$.allowedTransitions", containsInAnyOrder(allowed)));
+        }
+    }
+
+    @ParameterizedTest
     @MethodSource("pairs")
     void everyFromToPair(TicketStatus from, TicketStatus to) throws Exception {
         long ticketId = insert(from);
@@ -50,9 +64,15 @@ class TransitionMatrixIT extends PostgresIntegrationTest {
                 .content(body(to)));
 
         if (isAllowed(from, to)) {
-            result.andExpect(status().isOk());
+            String[] allowedAfter = to.allowedTransitions().stream().map(TicketStatus::name).toArray(String[]::new);
+            result.andExpect(status().isOk()).andExpect(jsonPath("$.status").value(to.name()));
+            if (allowedAfter.length == 0) {
+                result.andExpect(jsonPath("$.allowedTransitions").isEmpty());
+            } else {
+                result.andExpect(jsonPath("$.allowedTransitions", containsInAnyOrder(allowedAfter)));
+            }
         } else {
-            String[] allowed = expectedAllowed(from).stream().map(TicketStatus::name).toArray(String[]::new);
+            String[] allowed = from.allowedTransitions().stream().map(TicketStatus::name).toArray(String[]::new);
             result.andExpect(status().isConflict())
                     .andExpect(jsonPath("$.errorCode").value("INVALID_TRANSITION"))
                     .andExpect(jsonPath("$.currentStatus").value(from.name()));
@@ -112,16 +132,7 @@ class TransitionMatrixIT extends PostgresIntegrationTest {
         return count == null ? 0 : count;
     }
 
-    private static Set<TicketStatus> expectedAllowed(TicketStatus status) {
-        return switch (status) {
-            case OPEN -> EnumSet.of(TicketStatus.IN_PROGRESS, TicketStatus.CANCELLED);
-            case IN_PROGRESS -> EnumSet.of(TicketStatus.RESOLVED, TicketStatus.CANCELLED);
-            case RESOLVED -> EnumSet.of(TicketStatus.CLOSED);
-            case CLOSED, CANCELLED -> EnumSet.noneOf(TicketStatus.class);
-        };
-    }
-
     private static boolean isAllowed(TicketStatus from, TicketStatus to) {
-        return expectedAllowed(from).contains(to);
+        return from.allowedTransitions().contains(to);
     }
 }
