@@ -1,0 +1,94 @@
+openapi: 3.1.0
+info:
+  title: Ticket Management API - Ticket Assistant
+  version: 0.1.0
+  description: |
+    REST contract for feature 002-ticket-assistant.
+
+    Invalid questions return 400 `INVALID_QUESTION` (problem+json, same family as 001).
+    Ask outcomes below are returned with HTTP 200.
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: Assistant
+  - name: AssistantRefresh
+paths:
+  /api/ai/ask:
+    post:
+      tags: [Assistant]
+      operationId: askAssistant
+      summary: Ask one grounded question
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AskRequest'
+      responses:
+        '200':
+          description: Ask outcome
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AskResponse'
+        '400':
+          description: Invalid question
+  /api/ai/refresh/status:
+    get:
+      tags: [AssistantRefresh]
+      operationId: getRefreshStatus
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshStatusResponse'
+  /api/ai/refresh/rebuild:
+    post:
+      tags: [AssistantRefresh]
+      operationId: rebuildKnowledge
+      responses:
+        '202':
+          description: Rebuild accepted
+components:
+  schemas:
+    AskRequest:
+      type: object
+      additionalProperties: false
+      required: [question]
+      properties:
+        question:
+          type: string
+          minLength: 1
+          maxLength: 1000
+    AskResponse:
+      type: object
+      required: [outcome]
+      properties:
+        outcome:
+          type: string
+          enum: [GROUNDED, NO_RELEVANT_TICKETS, CITATION_VERIFICATION_FAILED]
+        answer:
+          type: string
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketSource'
+    TicketSource:
+      type: object
+      required: [ticketId, title, status]
+      properties:
+        ticketId:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+    RefreshStatusResponse:
+      type: object
+      required: [pending, failed]
+      properties:
+        pending:
+          type: integer
+        failed:
+          type: integer
